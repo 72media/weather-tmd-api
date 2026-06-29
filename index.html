@@ -74,6 +74,20 @@
             background: #ef4444; border-color: #f87171;
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
+        .btn-toggle.active.windy-color {
+            background: #8b5cf6; border-color: #a78bfa;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+        /* ── Windy Radar Panel ── */
+        #windy-container {
+            width: 100%; flex-grow: 1;
+            border-radius: 10px; overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            display: none;
+        }
+        #windy-container iframe {
+            width: 100%; height: 100%; border: none; display: block;
+        }
         .panel-title { font-size: 13px; font-weight: 700; margin: 0; padding-bottom: 8px; display: flex; align-items: center; }
         .title-left { color: #4ade80; border-bottom: 2px solid rgba(74, 222, 128, 0.15); width: 100%; }
         .title-right { color: #f97316; border-bottom: 2px solid rgba(249, 115, 22, 0.15); width: 100%; }
@@ -174,8 +188,12 @@
             <div class="map-controls">
                 <button id="btn-temp" class="btn-toggle active" onclick="switchMode('temp')">🌡️ อุณหภูมิสถานีตรวจวัดเรียลไทม์ (V2)</button>
                 <button id="btn-risk" class="btn-toggle" onclick="switchMode('risk')">🌧️ โหมดพื้นที่เสี่ยงภัย (Risk Map)</button>
+                <button id="btn-windy" class="btn-toggle" onclick="switchMode('windy')">🛰️ เรดาร์ฝน Windy (Live)</button>
             </div>
             <div id="map-container"></div>
+            <div id="windy-container">
+                <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=5&overlay=radar&product=radar&level=surface&lat=12.426&lon=101.733" allowfullscreen></iframe>
+            </div>
         </div>
         
         <div class="side-panel">
@@ -347,7 +365,21 @@
         document.getElementById('btn-temp').classList.toggle('active', mode === 'temp');
         document.getElementById('btn-risk').classList.toggle('active', mode === 'risk');
         document.getElementById('btn-risk').classList.toggle('risk-color', mode === 'risk');
-        
+        document.getElementById('btn-windy').classList.toggle('active', mode === 'windy');
+        document.getElementById('btn-windy').classList.toggle('windy-color', mode === 'windy');
+
+        const mapEl   = document.getElementById('map-container');
+        const windyEl = document.getElementById('windy-container');
+
+        if (mode === 'windy') {
+            mapEl.style.display   = 'none';
+            windyEl.style.display = 'block';
+            return;
+        }
+
+        mapEl.style.display   = '';
+        windyEl.style.display = 'none';
+
         if(!mapChartInstance) return;
 
         if(mode === 'temp') {
