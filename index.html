@@ -99,6 +99,36 @@
         .stats-table tbody tr:hover td { background: linear-gradient(90deg, rgba(249, 115, 22, 0.08), transparent); color: #f97316; }
         .badge-count { background: rgba(249, 115, 22, 0.1); color: #f97316; padding: 3px 8px; border-radius: 20px; font-weight: 700; font-size: 11px; }
         
+        /* ── Ticker Strip (ใน header) ── */
+        .ticker-strip {
+            overflow: hidden;
+            flex: 1;                          /* ยืดเต็มพื้นที่ระหว่างชื่อกับนาฬิกา */
+            margin: 0 20px;
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 8px;
+            padding: 6px 0;
+            align-self: center;
+        }
+        .ticker-track {
+            display: flex;
+            white-space: nowrap;
+            animation: tickerScroll 28s linear infinite;
+        }
+        .ticker-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #7dd3fc;
+            letter-spacing: 0.4px;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+            flex-shrink: 0;
+            padding: 0 12px;
+        }
+        @keyframes tickerScroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
         .warning-alert-panel {
             background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; gap: 14px;
@@ -119,7 +149,12 @@
     <div class="header-panel">
         <div class="header-text">
             <h1 class="clickable-title">THAILAND METEO METRIC HUB</h1>
-            <p>🛰️ ระบบประมวลผลข้อมูลสถานีตรวจวัดสภาพอากาศเรียลไทม์ (WeatherToday V2 API) และดัชนีพื้นที่เสี่ยงภัยพิบัติรายวัน</p>
+        </div>
+        <div class="ticker-strip">
+            <div class="ticker-track">
+                <span class="ticker-text">🛰️&nbsp;&nbsp;ระบบประมวลผลข้อมูลสถานีตรวจวัดสภาพอากาศเรียลไทม์&nbsp;&nbsp;·&nbsp;&nbsp;WeatherToday V2 API&nbsp;&nbsp;·&nbsp;&nbsp;ดัชนีพื้นที่เสี่ยงภัยพิบัติรายวัน&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span class="ticker-text">🛰️&nbsp;&nbsp;ระบบประมวลผลข้อมูลสถานีตรวจวัดสภาพอากาศเรียลไทม์&nbsp;&nbsp;·&nbsp;&nbsp;WeatherToday V2 API&nbsp;&nbsp;·&nbsp;&nbsp;ดัชนีพื้นที่เสี่ยงภัยพิบัติรายวัน&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
         </div>
         <div id="live-clock" class="live-clock-panel">กำลังเชื่อมต่อเวลา...</div>
     </div>
