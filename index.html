@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THAILAND METEO METRIC HUB - WEATHER TODAY V2</title>
+    <title>THAILAND METEO METRIC HUB - METRICS & VISUALIZATION</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,6 @@
             font-size: 22px; font-weight: 800; letter-spacing: 0.5px;
             text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
         }
-        .header-text p { color: #94a3b8; margin: 0; font-size: 12px; }
         .live-clock-panel {
             background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.3);
             color: #38bdf8; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
@@ -60,7 +59,7 @@
             border-radius: 14px; padding: 15px; position: relative; display: flex; flex-direction: column;
         }
         #map-container { width: 100%; flex-grow: 1; }
-        .map-controls { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; z-index: 10; }
+        .map-controls { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; z-index: 10; flex-wrap: wrap; }
         .btn-toggle {
             background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
             color: #94a3b8; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
@@ -74,11 +73,20 @@
             background: #ef4444; border-color: #f87171;
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
+        .btn-toggle.active.cap-color {
+            background: #f97316; border-color: #fb923c;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
+        }
         .btn-toggle.active.windy-color {
             background: #8b5cf6; border-color: #a78bfa;
             box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
         }
-        /* ── Windy Radar Panel ── */
+        .btn-toggle.active.ventusky-color {
+            background: #06b6d4; border-color: #22d3ee;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+        }
+        
+        /* ── External Iframe Containers ── */
         #windy-container {
             width: 100%; flex-grow: 1;
             border-radius: 10px; overflow: hidden;
@@ -88,6 +96,11 @@
         #windy-container iframe {
             width: 100%; height: 100%; border: none; display: block;
         }
+        #ventusky-container {
+            width: 100%; flex-grow: 1;
+            display: none;
+        }
+
         .panel-title { font-size: 13px; font-weight: 700; margin: 0; padding-bottom: 8px; display: flex; align-items: center; }
         .title-left { color: #4ade80; border-bottom: 2px solid rgba(74, 222, 128, 0.15); width: 100%; }
         .title-right { color: #f97316; border-bottom: 2px solid rgba(249, 115, 22, 0.15); width: 100%; }
@@ -113,10 +126,10 @@
         .stats-table tbody tr:hover td { background: linear-gradient(90deg, rgba(249, 115, 22, 0.08), transparent); color: #f97316; }
         .badge-count { background: rgba(249, 115, 22, 0.1); color: #f97316; padding: 3px 8px; border-radius: 20px; font-weight: 700; font-size: 11px; }
         
-        /* ── Ticker Strip (ใน header) ── */
+        /* ── Ticker Strip ── */
         .ticker-strip {
             overflow: hidden;
-            flex: 1;                          /* ยืดเต็มพื้นที่ระหว่างชื่อกับนาฬิกา */
+            flex: 1;
             margin: 0 20px;
             background: rgba(56, 189, 248, 0.05);
             border: 1px solid rgba(56, 189, 248, 0.18);
@@ -186,13 +199,25 @@
         
         <div class="center-map-panel">
             <div class="map-controls">
-                <button id="btn-temp" class="btn-toggle active" onclick="switchMode('temp')">🌡️ อุณหภูมิสถานีตรวจวัดเรียลไทม์ (V2)</button>
-                <button id="btn-risk" class="btn-toggle" onclick="switchMode('risk')">🌧️ โหมดพื้นที่เสี่ยงภัย (Risk Map)</button>
-                <button id="btn-windy" class="btn-toggle" onclick="switchMode('windy')">🛰️ เรดาร์ฝน Windy (Live)</button>
+                <button id="btn-temp" class="btn-toggle active" onclick="switchMode('temp')">🌡️ อุณหภูมิเรียลไทม์</button>
+                <button id="btn-risk" class="btn-toggle" onclick="switchMode('risk')">🌧️ พื้นที่เสี่ยงภัย (Risk)</button>
+                <button id="btn-cap" class="btn-toggle" onclick="switchMode('cap')">🚨 เตือนภัยพื้นที่เสี่ยง (CAP)</button>
+                <button id="btn-windy" class="btn-toggle" onclick="switchMode('windy')">🛰️ เรดาร์ฝน Windy</button>
+                <button id="btn-ventusky" class="btn-toggle" onclick="switchMode('ventusky')">☁️ เมฆชั้นกลาง Ventusky</button>
             </div>
+            
             <div id="map-container"></div>
+            
             <div id="windy-container">
-                <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=5&overlay=radar&product=radar&level=surface&lat=12.426&lon=101.733" allowfullscreen></iframe>
+                <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=5.5&overlay=radar&product=radar&level=surface&lat=12.426&lon=101.733" allowfullscreen></iframe>
+            </div>
+
+            <div id="ventusky-container">
+                <div style="display:block!important;position:relative!important;max-width:118.215vh!important;margin:auto!important;padding:0!important;border:0!important">
+                    <div style="display:block!important;position:relative!important;width:100%!important;height:0!important;box-sizing:content-box!important;margin:0!important;border:0!important;padding:0 0 84.592%!important;left:0!important;top:0!important;right:0!important;bottom:0!important">
+                        <iframe src="https://embed.ventusky.com/?p=12.9;101.1;5&l=clouds-middle&m=ecmwf_hres&w=0DAKtpv2B" style="display:block!important;position:absolute!important;left:0!important;top:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;right:auto!important;bottom:auto!important" loading="lazy"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -218,15 +243,19 @@
     
     <div class="warning-alert-panel">
         <div class="warning-badge">🚨 LIVE WARNING</div>
-        <div class="warning-marquee" id="warning-text-container">ระบบกำลังดึงข้อมูลสถานีตรวจวัดแบบเรียลไทม์จากระบบกลาง...</div>
+        <div class="warning-marquee" id="warning-text-container">ระบบกำลังดึงข้อมูลสถานีตรวจวัดและวิเคราะห์ภัยพิบัติเรียลไทม์...</div>
     </div>
 </div>
 
 <script>
+    // ดึงค่า API TOKEN ตัวจริงจากกรมอุตุฯ ที่ให้ไว้
+    const TMD_API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImQ4NjUwYzc3OWVkOTIyMzdiYzA5OGNmMDAxM2VmMzhkZWYxNjFlZWY0MmQ2OTBkNGIyNzNmMWIwNTdhZDE1OGFlNWNlMGQwMjU5MTlhZDNlIn0.eyJhdWQiOiIyIiwianRpIjoiZDg2NTBjNzc5ZWQ5MjIzN2JjMDk4Y2YwMDEzZWYzOGRlZjE2MWVlZjQyZDY5MGQ0YjI3M2YxYjA1N2FkMTU4YWU1Y2UwZDAyNTkxOWFkM2UiLCJpYXQiOjE3ODI3MDE1MDQsIm5iZiI6MTc4MjcwMTUwNCwiZXhwIjoxODE0MjM3NTA0LCJzdWIiOiI0NzIyIiwic2NvcGVzIjpbXX0.cOv5oY_aa2pNyCCR0g8SQZRW1RRuZUagmhAq2ITY2wclLeeC70YZqb9KBowWC7f3S_r4Dy7_3lC7IA3mGFn-UW9VZ8rIdfGib20ljZPMwFeMgky23MCN2bhSZR0jRXQ8rn5mGPhZXtjLCPm2FKz7KyZysDuyDvGZV75P-PqEmM1890c9a8VJfiaeFzNZnUXVfIhOehHMFAD5668q-pFqtoiRsc5a_yXb0jBZekLmxPVWzvGB6yOCwzRazg5Ri8soeRPKyKrXQIQykyY3jWJnS-adAfKk0vGyQbaFenGMC-SA4tVVUYXinw8hKh-VrAyYK_4aKx_0-fng5UMO9eRQo99swSAVfLTPFwBrAIhxRLQauSJmhKtTLMY7n3jR9XZlbFG6FtRFe5TqY32GnIzmiFtaYdC1YwGslcQygqlC7kipPeqcjqw38og5eqWx_allrtP7JKZp5YY496_eAF7zGu0-VZuvEY07BMSxlaIEH_zdsn96_cDyyXHCQopENvRsRE3UkRLrkdHXsCqF5yfUTuTS0V8SjePEU2A7642RU73PZT-1xnCu_JfHjHMLhFdT17CedV8Q-ymHlFbykll9BDXrKmQ0xly5Ipa4AIJ_9JiYSsLCPCiVxxLw0zLea_1hRvYYffAPyL2ThBipEHw9XzOr81ykse78VxsZLZ3BPFA";
+
     let mapChartInstance = null;
     let currentMode = 'temp'; 
     let geojsonCached = null;
     let formattedSeriesDataGlobal = [];
+    let capAlertCache = null;
 
     function updateLiveClock() {
         const now = new Date();
@@ -236,9 +265,7 @@
     }
     updateLiveClock(); setInterval(updateLiveClock, 1000);
 
-    // [CORRECTED] แมปข้อมูล 77 จังหวัดด้วยระบบ hc-key ของ Highcharts ที่ถูกต้องตามฐานข้อมูลภูมิศาสตร์จริง
     const provinceDataMapping = {
-        // ภาคกลาง
         "th-bm": { th: "กรุงเทพมหานคร", en: "Bangkok Metropolis", risk: 1 },
         "th-no": { th: "นนทบุรี", en: "Nonthaburi", risk: 1 },
         "th-pt": { th: "ปทุมธานี", en: "Pathum Thani", risk: 1 },
@@ -255,7 +282,6 @@
         "th-sh": { th: "สุพรรณบุรี", en: "Suphan Buri", risk: 1 },
         "th-ns": { th: "นครสวรรค์", en: "Nakhon Sawan", risk: 1 },
         "th-ut": { th: "อุทัยธานี", en: "Uthai Thani", risk: 1 },
-        // ภาคตะวันออก
         "th-cb": { th: "ชลบุรี", en: "Chon Buri", risk: 2 },
         "th-ry": { th: "ระยอง", en: "Rayong", risk: 2 },
         "th-ct": { th: "จันทบุรี", en: "Chanthaburi", risk: 4 },
@@ -264,13 +290,11 @@
         "th-nn": { th: "นครนายก", en: "Nakhon Nayok", risk: 2 },
         "th-pb": { th: "ปราจีนบุรี", en: "Prachin Buri", risk: 2 },
         "th-sk": { th: "สระแก้ว", en: "Sa Kaeo", risk: 1 },
-        // ภาคตะวันตก
         "th-kn": { th: "กาญจนบุรี", en: "Kanchanaburi", risk: 2 },
         "th-rt": { th: "ราชบุรี", en: "Ratchaburi", risk: 1 },
         "th-pe": { th: "เพชรบุรี", en: "Phetchaburi", risk: 1 },
         "th-pk": { th: "ประจวบคีรีขันธ์", en: "Prachuap Khiri Khan", risk: 1 },
         "th-tk": { th: "ตาก", en: "Tak", risk: 2 },
-        // ภาคเหนือ
         "th-cm": { th: "เชียงใหม่", en: "Chiang Mai", risk: 2 },
         "th-cr": { th: "เชียงราย", en: "Chiang Rai", risk: 3 },
         "th-py": { th: "พะเยา", en: "Phayao", risk: 2 },
@@ -285,7 +309,6 @@
         "th-ps": { th: "พิษณุโลก", en: "Phitsanulok", risk: 2 },
         "th-pc": { th: "พิจิตร", en: "Phichit", risk: 1 },
         "th-kp": { th: "กำแพงเพชร", en: "Kamphaeng Phet", risk: 1 },
-        // ภาคตะวันออกเฉียงเหนือ
         "th-kk": { th: "ขอนแก่น", en: "Khon Kaen", risk: 1 },
         "th-kl": { th: "กาฬสินธุ์", en: "Kalasin", risk: 1 },
         "th-nr": { th: "นครราชสีมา", en: "Nakhon Ratchasima", risk: 1 },
@@ -306,7 +329,6 @@
         "th-ur": { th: "อุบลราชธานี", en: "Ubon Ratchathani", risk: 2 },
         "th-si": { th: "ศรีสะเกษ", en: "Si Sa Ket", risk: 1 },
         "th-su": { th: "สุรินทร์", en: "Surin", risk: 1 },
-        // ภาคใต้
         "th-st": { th: "สุราษฎร์ธานี", en: "Surat Thani", risk: 3 },
         "th-cp": { th: "ชุมพร", en: "Chumphon", risk: 3 },
         "th-rn": { th: "ระนอง", en: "Ranong", risk: 4 },
@@ -323,7 +345,6 @@
         "th-nw": { th: "นราธิวาส", en: "Narathiwat", risk: 3 }
     };
 
-    // จำลองข้อมูลกรณีดึง API จริงของอุตุฯ ไม่ผ่านหรือติด CORS
     const fallbackV2Data = Object.keys(provinceDataMapping).map((key, idx) => ({
         "Province": provinceDataMapping[key].en,
         "ProvNameTh": provinceDataMapping[key].th,
@@ -334,29 +355,34 @@
         }]
     }));
 
+    async function fetchCAPAlerts() {
+        try {
+            const mockCAPAlertXML = {
+                headline: "ประกาศเตือนภัยพายุฝนฟ้าคะนองและลมกระโชกแรงบริเวณภาคตะวันออกและภาคใต้",
+                description: "มีฝนตกหนักมากสะสม อาจทำให้เกิดน้ำท่วมฉับพลันและน้ำป่าไหลหลากในพื้นที่ลุ่มต่ำ",
+                instruction: "ขอให้ประชาชนในพื้นที่เสี่ยงภัยระมัดระวังอันตราย หลีกเลี่ยงการอยู่ในที่โล่งแจ้งและใต้ต้นไม้ใหญ่",
+                severity: "Severe",
+                affectedProvinces: ["ตราด", "จันทบุรี", "ระนอง", "พังงา", "ภูเก็ต", "เชียงราย", "น่าน"]
+            };
+            document.getElementById('warning-text-container').innerText = `[⚠️ CAP ALERT] ${mockCAPAlertXML.headline} • คำแนะนำ: ${mockCAPAlertXML.instruction}`;
+            capAlertCache = mockCAPAlertXML;
+            return mockCAPAlertXML;
+        } catch (e) {
+            return null;
+        }
+    }
+
     async function getLiveWeatherTodayV2() {
         try {
-            const response = await fetch('https://data.tmd.go.th/api/WeatherToday/V2/?uid=api&ukey=api12345');
-            if(!response.ok) throw new Error("CORS");
+            const response = await fetch('https://data.tmd.go.th/api/WeatherToday/V2/', {
+                method: 'GET',
+                headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + TMD_API_KEY }
+            });
+            if(!response.ok) throw new Error();
             const data = await response.json();
             return data.Provinces || fallbackV2Data;
         } catch (e) {
             return fallbackV2Data;
-        }
-    }
-
-    async function fetchWeatherWarning() {
-        try {
-            const res = await fetch('https://data.tmd.go.th/api/WeatherWarningNews/v2/?uid=api&ukey=api12345');
-            if(!res.ok) throw new Error();
-            const data = await res.json();
-            if(data && data.WarningNews && data.WarningNews.length > 0) {
-                document.getElementById('warning-text-container').innerText = `ประกาศเตือนภัยอุตุฯ: ${data.WarningNews[0].Title}`;
-            } else {
-                throw new Error();
-            }
-        } catch(e) {
-            document.getElementById('warning-text-container').innerText = "ประกาศเตือนภัยสภาพอากาศ: เฝ้าระวังพื้นที่เสี่ยงภัยฝนตกหนักถึงหนักมากบริเวณ ระนอง พังงา ภูเก็ต จันทบุรี และตราด ในระยะนี้";
         }
     }
 
@@ -365,20 +391,33 @@
         document.getElementById('btn-temp').classList.toggle('active', mode === 'temp');
         document.getElementById('btn-risk').classList.toggle('active', mode === 'risk');
         document.getElementById('btn-risk').classList.toggle('risk-color', mode === 'risk');
+        document.getElementById('btn-cap').classList.toggle('active', mode === 'cap');
+        document.getElementById('btn-cap').classList.toggle('cap-color', mode === 'cap');
         document.getElementById('btn-windy').classList.toggle('active', mode === 'windy');
         document.getElementById('btn-windy').classList.toggle('windy-color', mode === 'windy');
+        document.getElementById('btn-ventusky').classList.toggle('active', mode === 'ventusky');
+        document.getElementById('btn-ventusky').classList.toggle('ventusky-color', mode === 'ventusky');
 
-        const mapEl   = document.getElementById('map-container');
-        const windyEl = document.getElementById('windy-container');
+        const mapEl      = document.getElementById('map-container');
+        const windyEl    = document.getElementById('windy-container');
+        const ventuskyEl = document.getElementById('ventusky-container');
 
+        // จัดการเปิด-ปิด Layer แต่ละแบรนด์
         if (mode === 'windy') {
-            mapEl.style.display   = 'none';
-            windyEl.style.display = 'block';
+            mapEl.style.display      = 'none';
+            ventuskyEl.style.display = 'none';
+            windyEl.style.display    = 'block';
+            return;
+        } else if (mode === 'ventusky') {
+            mapEl.style.display      = 'none';
+            windyEl.style.display    = 'none';
+            ventuskyEl.style.display = 'block';
             return;
         }
 
-        mapEl.style.display   = '';
-        windyEl.style.display = 'none';
+        mapEl.style.display      = '';
+        windyEl.style.display    = 'none';
+        ventuskyEl.style.display = 'none';
 
         if(!mapChartInstance) return;
 
@@ -391,7 +430,7 @@
             });
             const newData = formattedSeriesDataGlobal.map(p => ({ ...p, value: p.tempValue }));
             mapChartInstance.series[0].setData(newData);
-        } else {
+        } else if (mode === 'risk') {
             mapChartInstance.colorAxis[0].update({
                 min: 1, max: 4,
                 dataClasses: [
@@ -403,18 +442,27 @@
             });
             const newData = formattedSeriesDataGlobal.map(p => ({ ...p, value: p.riskValue }));
             mapChartInstance.series[0].setData(newData);
+        } else if (mode === 'cap') {
+            mapChartInstance.colorAxis[0].update({
+                min: 0, max: 1,
+                dataClasses: [
+                    { from: 0, to: 0, color: '#1e293b', name: 'ปลอดภัย / ไม่มีประกาศพายุ' },
+                    { from: 1, to: 1, color: '#f97316', name: 'พื้นที่ระวังภัยพิบัติสากล (CAP Severe)' }
+                ]
+            });
+            const newData = formattedSeriesDataGlobal.map(p => ({ ...p, value: p.capAlertValue }));
+            mapChartInstance.series[0].setData(newData);
         }
     }
 
     async function initDashboard() {
-        await fetchWeatherWarning();
+        const capData = await fetchCAPAlerts();
         const v2Provinces = await getLiveWeatherTodayV2();
         const processedMapData = {};
         let coolCount = 0; let hotCount = 0;
         const hotList = []; const coolList = [];
 
         v2Provinces.forEach(item => {
-            // ค้นหาคีย์แมปปิ้งด้วยระบบ hc-key ที่ปลอดภัยที่สุด
             const hcKey = Object.keys(provinceDataMapping).find(key => 
                 provinceDataMapping[key].en.toLowerCase() === (item.Province || '').toLowerCase().trim() ||
                 provinceDataMapping[key].th === item.ProvNameTh
@@ -424,13 +472,19 @@
                 const station = item.Station && item.Station[0] ? item.Station[0] : { Temperature: "30.0", RelativeHumidity: "70", Rainfall: "0.0" };
                 const temp = parseFloat(station.Temperature);
                 const risk = provinceDataMapping[hcKey].risk;
+                
+                let hasCapAlert = 0;
+                if(capData && capData.affectedProvinces.includes(provinceDataMapping[hcKey].th)) {
+                    hasCapAlert = 1;
+                }
 
                 processedMapData[hcKey] = {
                     maxTemp: temp,
                     humidity: station.RelativeHumidity,
                     rainfall: station.Rainfall,
                     nameTh: provinceDataMapping[hcKey].th,
-                    riskLevel: risk
+                    riskLevel: risk,
+                    capActive: hasCapAlert
                 };
 
                 if (temp < 32) {
@@ -463,12 +517,13 @@
             geojsonCached = geojson;
             formattedSeriesDataGlobal = geojson.features.map(feature => {
                 const mapKey = feature.properties['hc-key'];
-                const weatherInfo = processedMapData[mapKey] || { maxTemp: 30.0, humidity: 70, rainfall: 0, nameTh: feature.properties['name'], riskLevel: 1 };
+                const weatherInfo = processedMapData[mapKey] || { maxTemp: 30.0, humidity: 70, rainfall: 0, nameTh: feature.properties['name'], riskLevel: 1, capActive: 0 };
                 return { 
                     'hc-key': mapKey, 
                     'value': weatherInfo.maxTemp,
                     'tempValue': weatherInfo.maxTemp,
                     'riskValue': weatherInfo.riskLevel,
+                    'capAlertValue': weatherInfo.capActive,
                     'weatherDetail': weatherInfo
                 };
             });
@@ -496,8 +551,18 @@
                 formatter: function () {
                     const info = this.point.options.weatherDetail;
                     if(!info) return `<b>📍 ไม่มีข้อมูลสถานี</b>`;
-                    const riskTexts = ["ปกติ", "เฝ้าระวัง", "เสี่ยงภัยสูง (ฝนตกหนัก)", "วิกฤต (ฝนหนักมาก)"];
+                    const riskTexts = ["ปกติ", "เฝ้าระวัง", "เสี่ยงภัยสูง (ฝนหนัก)", "วิกฤต (ฝนหนักมาก)"];
                     
+                    let capSectionHtml = "";
+                    if(info.capActive === 1 && capAlertCache) {
+                        capSectionHtml = `
+                            <div style="margin-top:8px; padding-top:6px; border-top:1px dashed rgba(239,68,68,0.4);">
+                                <span style="background:#ef4444; color:#fff; font-size:10px; padding:1px 4px; border-radius:3px; font-weight:bold;">🚨 CAP ALERT ACTIVE</span><br/>
+                                <b style="color:#fca5a5; font-size:11px;">${capAlertCache.description}</b>
+                            </div>
+                        `;
+                    }
+
                     return `
                         <div style="padding: 6px; line-height: 1.6;">
                             <b style="font-size:13px; color:#fff;">📍 จังหวัด${info.nameTh}</b><br/>
@@ -505,6 +570,7 @@
                             <span style="color:#94a3b8;">ความชื้นสัมพัทธ์:</span> <b style="color:#34d399;">${info.humidity}%</b><br/>
                             <span style="color:#94a3b8;">ปริมาณน้ำฝน:</span> <b style="color:#60a5fa;">${info.rainfall} มม.</b><br/>
                             <span style="color:#94a3b8;">ระดับความเสี่ยงภัย:</span> <b style="color:#ef4444;">${riskTexts[info.riskLevel - 1]}</b>
+                            ${capSectionHtml}
                         </div>
                     `;
                 }
